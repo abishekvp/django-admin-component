@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
+    'authenticate.apps.AuthenticateConfig',
 ]
 
 MIDDLEWARE = [
@@ -128,3 +129,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 Admin_Username = 'abiraj'
 Admin_Password = 'abiraj'
+
+# Authentication settings
+LOGIN_URL = 'signin'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'signin'

@@ -1,27 +1,85 @@
-{% extends 'index.html' %}
+{% extends 'base.html' %}
+{% load static %}
 {% block title %}Sign-Up{% endblock title %}
-{% block sign %}
-    <section class="sign d-flex justify-content-center align-items-center">
-        <div class="card p-4 custom-card" style="width: 40%; background-color: rgba(255, 255, 255, 0.8); border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <h1 class="text-center mb-4">Sign Up</h1>
-            <form action="" method="post">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <input type="text" name="username" id="username" class="form-control" placeholder="Username" required>
-                </div>
-                <div class="mb-3">
-                    <input type="email" name="email" id="email" class="form-control" placeholder="Email" required>
-                </div>
-                <div class="mb-3">
-                    <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
-                </div>
-                <div class="text-center">
-                    <input type="submit" value="Sign Up" class="btn btn-primary w-100 custom-btn">
-                </div>
-            </form>
-            <div class="text-center mt-3">
-                Already have an account? <a href="signin">Sign In</a>
+{% block index %}
+<div class="login-wrapper">
+    <div class="d-flex justify-content-center mt-5">
+        <div class="card" id="login-card">
+            <div class="card-body text-center">
+                <h3><span class="text-carolina bold">SIQ</span>THEME</h3>
+            </div>
+            <div class="card-body">
+                <form action="" method="post">
+                    <div class="text-center pb-3">
+                        <h5 class="text-center bold">Sign-In</h5>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="ti-user"></i></span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="username">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="ti-lock"></i></span>
+                        </div>
+                        <input type="password" class="form-control" placeholder="password">
+                    </div>
+                    <div class="form-checkbox">
+                        <label>
+                            <input type="checkbox" name="remember">
+                            <span class="checkmark"><i class="ti-check"></i></span>
+                            Remember
+                        </label>
+                        <div class="float-right"><a href="javascript:;" class="card-link" id="forget-password">Forgot
+                                password?</a></div>
+                    </div>
+                    <div class="form-group text-right">
+                        <button type="submit" class="btn btn-carolina">Login</button>
+                    </div>
+                </form>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item text-center">
+                    <p><strong>Or login with</strong></p>
+                    <button type="button" class="btn btn-outline-primary"><i class="ti-facebook"></i></button>
+                    <button type="button" class="btn btn-outline-primary"><i class="ti-twitter"></i></button>
+                    <button type="button" class="btn btn-outline-primary"><i class="ti-google"></i></button>
+                    <button type="button" class="btn btn-outline-primary"><i class="ti-github"></i></button>
+                </li>
+                <li class="list-group-item text-center">
+                    <p class="card-text">Don't have an account? <a href="javascript:;" class="card-link">Sign Up</a></p>
+                </li>
+            </ul>
+            <div class="card-footer">
+                <p class="card-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem sapiente illum obcaecati unde cum alias assumenda eos animi, temporibus molestiae dignissimos debitis consequatur id aut praesentium nisi accusamus quos possimus.</p>
+                <p><small>Copyright © 2019-2020 BrandName by 3M Square</small></p>
             </div>
         </div>
-    </section>
+
+        <div class="card" id="forget-card">
+            <div class="card-body logo text-center">
+                <h3><span class="text-carolina bold">SIQ</span>THEME</h3>
+            </div>
+            <div class="card-body">
+                <form action="" method="post">
+                    <div class="pb-2">
+                        <h5 class="text-center bold">Forget Password</h5>
+                        <p>Enter email address below to reset your password.</p>
+                    </div>
+                    <div class="input-group mb-4">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="ti-email"></i></span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Email Address">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-carolina">Reset Password</button>
+                        <a href="#" class="btn btn-secondary" id="forget-cancel">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
