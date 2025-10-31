@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 import re, sqlite3, json, requests
 from io import BytesIO
-import matplotlib.pyplot as plt
 from app.models import GroupMessages, DeletedMessages, Updates
 from app.constants import *
 from asgiref.sync import sync_to_async
