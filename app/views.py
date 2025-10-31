@@ -3,7 +3,86 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
+from bot import bot_updated
+import asyncio
+import threading
+from app.models import Log
+from app.constants import DEBUG, ERROR, INFO
+from app.log import log
 
+bot_thread = None
+bot_stop_event = threading.Event()
+
+def run_bot_thread(stop_event):
+    """Run the asyncio bot loop safely inside a thread."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(run_bot(stop_event))
+    loop.close()
+
+
+async def run_bot(stop_event):
+    """Run the async bot logic."""
+    await bot_updated.client.start(phone=bot_updated.PHONE)
+
+    # Run the bot's async main logic (your existing code)
+    asyncio.create_task(bot_updated.main())
+
+    # Keep checking for stop signal
+    while not stop_event.is_set():
+        await asyncio.sleep(1)
+
+    log("[BOT] Stop signal received. Disconnecting...")
+    await bot_updated.client.disconnect()
+    log("[BOT] Disconnected cleanly.")
+
+
+def start_bot_thread():
+    """Start the Telegram bot in a background thread."""
+    global bot_thread, bot_stop_event
+
+    if bot_thread and bot_thread.is_alive():
+        log("[BOT] Already running.")
+        return False
+
+    bot_stop_event.clear()
+    bot_thread = threading.Thread(
+        target=run_bot_thread,
+        args=(bot_stop_event,),
+        daemon=True
+    )
+    bot_thread.start()
+    log("[BOT] Started successfully.")
+    return True
+
+
+def stop_bot_thread():
+    """Stop the Telegram bot gracefully."""
+    global bot_thread, bot_stop_event
+
+    if not bot_thread or not bot_thread.is_alive():
+        log("[BOT] Not running.")
+        return False
+
+    bot_stop_event.set()
+    bot_thread.join(timeout=5)
+    log("[BOT] Stopped successfully.")
+    return True
+
+def start_bot(request):
+    started = start_bot_thread()
+    return JsonResponse({
+        "message": "Bot started successfully" if started else "Bot already running",
+        "status": 200 if started else 409
+    })
+
+
+def stop_bot(request):
+    stopped = stop_bot_thread()
+    return JsonResponse({
+        "message": "Bot stopped" if stopped else "Bot not running",
+        "status": 200 if stopped else 404
+    })
 
 @login_required(login_url='signin')
 def dashboard(request):

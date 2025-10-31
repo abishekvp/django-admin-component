@@ -32637,7 +32637,7 @@ var Dashboard1 = function() {
             sparklineChart1();
             sparklineChart2();
             handleThemeSwitchTab();
-            toastrDemo();
+            // toastrDemo();
             fetchRssArticles();
         }
     }
