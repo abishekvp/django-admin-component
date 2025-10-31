@@ -8,7 +8,8 @@ import asyncio
 import threading
 from app.models import Log
 from app.constants import DEBUG, ERROR, INFO
-from app.log import log
+from app.log import log, alog
+from bot.bot_onprem import run_bot as onprem_run
 
 bot_thread = None
 bot_stop_event = threading.Event()
@@ -23,8 +24,6 @@ def run_bot_thread(stop_event):
 
 async def run_bot(stop_event):
     """Run the async bot logic."""
-    await bot_updated.client.start(phone=bot_updated.PHONE)
-
     # Run the bot's async main logic (your existing code)
     asyncio.create_task(bot_updated.main())
 
@@ -32,9 +31,11 @@ async def run_bot(stop_event):
     while not stop_event.is_set():
         await asyncio.sleep(1)
 
-    log("[BOT] Stop signal received. Disconnecting...")
-    await bot_updated.client.disconnect()
-    log("[BOT] Disconnected cleanly.")
+    await alog("[BOT] Stop signal received. Disconnecting...")
+    client = bot_updated.get_client()
+    if client:
+        await client.disconnect()
+    await alog("[BOT] Disconnected cleanly.")
 
 
 def start_bot_thread():
@@ -70,11 +71,12 @@ def stop_bot_thread():
     return True
 
 def start_bot(request):
-    started = start_bot_thread()
-    return JsonResponse({
-        "message": "Bot started successfully" if started else "Bot already running",
-        "status": 200 if started else 409
-    })
+    # started = start_bot_thread()
+    onprem_run()
+    # return JsonResponse({
+    #     "message": "Bot started successfully" if started else "Bot already running",
+    #     "status": 200 if started else 409
+    # })
 
 
 def stop_bot(request):

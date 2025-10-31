@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 import re, sqlite3, json, requests
 from io import BytesIO
-from app.models import GroupMessages, DeletedMessages, Updates
+# from app.models import GroupMessages, DeletedMessages, Updates
 from app.constants import *
 from asgiref.sync import sync_to_async
-from app.log import log
+# from app.log import log, alog
 
 # ---------------- CONFIGURABLE PARAMETERS ---------------- #
 
@@ -21,13 +21,16 @@ AUTO_EXPORT_WINDOW_MINUTES = 2
 SUMMARY_LOOKBACK_HOURS = 24
 
 
-try:
-    loop = asyncio.get_event_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+client = None
 
-client = TelegramClient('signal_bot', API_ID, API_HASH, loop=loop)
+def ensure_client():
+    global client
+    if client is None:
+        client = TelegramClient('signal_bot', API_ID, API_HASH)
+    return client
+
+def get_client():
+    return client
 
 # ---------------- DATABASE SETUP ---------------- #
 # conn = sqlite3.connect(DB_PATH)
@@ -224,7 +227,7 @@ async def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
         try:
             await client.edit_message(dest_id, fwd_id, updated_text)
         except Exception as e:
-            log(f"[EDIT ERROR] {e}")
+            await alog(f"[EDIT ERROR] {e}")
 
     message.parsed_message = json.dumps(parsed)
     message.save()
@@ -333,8 +336,9 @@ def save_message(parsed, event, sent_id, live_price, status='active', reason='')
 
 # ---------------- MAIN FUNCTION ---------------- #
 async def main():
+    ensure_client()
     await client.start(phone=PHONE)
-
+    await alog("[BOT] Telegram client started.")
     @client.on(events.NewMessage)
     async def handler(event):
         chat = await event.get_chat()
@@ -409,9 +413,9 @@ async def main():
                     message_id=msg.message_id,
                     message=msg.message
                 )
-                log(f"[DELETED] Forwarded message {msg.message_id} removed, saved in DB")
+                await alog(f"[DELETED] Forwarded message {msg.message_id} removed, saved in DB")
             except Exception as e:
-                log(f"[DELETE ERROR] {e}")
+                await alog(f"[DELETE ERROR] {e}")
 
     async def live_price_monitor_task():
         while True:
@@ -453,7 +457,7 @@ async def main():
                                 await mark_update(msg.id, "BE", price, "price_monitor")
 
                 except Exception as e:
-                    log(f"[LIVE-MONITOR ERROR] {e}")
+                    await alog(f"[LIVE-MONITOR ERROR] {e}")
 
             await asyncio.sleep(LIVE_PRICE_CHECK_INTERVAL)
 
@@ -498,9 +502,9 @@ async def main():
     #                             caption=f"📈 Channel Performance Summary — Last {SUMMARY_LOOKBACK_HOURS} Hours"
     #                         )
 
-    #                 log(f"[AUTO-EXPORT] Sent daily report with charts at {now}")
+    #                 await alog(f"[AUTO-EXPORT] Sent daily report with charts at {now}")
     #             except Exception as e:
-    #                 log(f"[AUTO-EXPORT ERROR] {e}")
+    #                 await alog(f"[AUTO-EXPORT ERROR] {e}")
     #             await asyncio.sleep(60 * 65)
     #         else:
     #             await asyncio.sleep(30)
@@ -563,3 +567,6 @@ async def main():
     asyncio.create_task(live_price_monitor_task())
     # asyncio.create_task(auto_export_task())
     await client.run_until_disconnected()
+
+if __name__ == '__main__':
+    asyncio.run(main())
