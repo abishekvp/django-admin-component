@@ -5,7 +5,6 @@ from django.utils.timezone import make_aware
 import re, sqlite3, json, requests
 from io import BytesIO
 import matplotlib.pyplot as plt
-import pandas as pd
 from app.models import GroupMessages, DeletedMessages, Updates
 from app.constants import *
 from asgiref.sync import sync_to_async
@@ -231,43 +230,43 @@ async def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
     message.parsed_message = json.dumps(parsed)
     message.save()
 
-# ---------------- SIGNAL PROGRESS CHART ---------------- #
-def generate_signal_progress_chart(message_id):
-    try:
-        message = GroupMessages.objects.get(id=message_id)
-    except GroupMessages.DoesNotExist:
-        return None
+# # ---------------- SIGNAL PROGRESS CHART ---------------- #
+# def generate_signal_progress_chart(message_id):
+#     try:
+#         message = GroupMessages.objects.get(id=message_id)
+#     except GroupMessages.DoesNotExist:
+#         return None
 
-    parsed = json.loads(message.parsed_message)
-    updates = list(Updates.objects.filter(message_id=message_id).values())
+#     parsed = json.loads(message.parsed_message)
+#     updates = list(Updates.objects.filter(message_id=message_id).values())
 
-    hit_events = [u for u in updates if u["event_type"].startswith("TP") or u["event_type"] in ["SL", "BE"]]
-    if not hit_events:
-        return None
+#     hit_events = [u for u in updates if u["event_type"].startswith("TP") or u["event_type"] in ["SL", "BE"]]
+#     if not hit_events:
+#         return None
 
-    times = [datetime.fromisoformat(u["event_time"]) for u in updates]
-    prices = [float(u["event_price"]) for u in updates]
+#     times = [datetime.fromisoformat(u["event_time"]) for u in updates]
+#     prices = [float(u["event_price"]) for u in updates]
 
-    if not times:
-        return None
+#     if not times:
+#         return None
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(times, prices, label="Live Price", marker='o')
-    for i, tp in enumerate(parsed.get("tp_list", []), 1):
-        plt.hlines(tp, times[0], times[-1], colors='green', linestyles='dashed', label=f"TP{i}")
-    if parsed.get("sl"):
-        plt.hlines(parsed["sl"], times[0], times[-1], colors='red', linestyles='dashed', label="SL")
-    plt.xlabel("Time")
-    plt.ylabel("Price")
-    plt.title(f"{parsed['pair']} {parsed['direction']} Signal Progress")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    output = BytesIO()
-    plt.savefig(output, format='png')
-    plt.close()
-    output.seek(0)
-    return output
+#     plt.figure(figsize=(10, 6))
+#     plt.plot(times, prices, label="Live Price", marker='o')
+#     for i, tp in enumerate(parsed.get("tp_list", []), 1):
+#         plt.hlines(tp, times[0], times[-1], colors='green', linestyles='dashed', label=f"TP{i}")
+#     if parsed.get("sl"):
+#         plt.hlines(parsed["sl"], times[0], times[-1], colors='red', linestyles='dashed', label="SL")
+#     plt.xlabel("Time")
+#     plt.ylabel("Price")
+#     plt.title(f"{parsed['pair']} {parsed['direction']} Signal Progress")
+#     plt.legend()
+#     plt.grid(True)
+#     plt.tight_layout()
+#     output = BytesIO()
+#     plt.savefig(output, format='png')
+#     plt.close()
+#     output.seek(0)
+#     return output
 
 # ---------------- CHANNEL PERFORMANCE CHART ---------------- #
 def generate_channel_performance_chart(hours_lookback=24):
@@ -459,109 +458,109 @@ async def main():
 
             await asyncio.sleep(LIVE_PRICE_CHECK_INTERVAL)
 
-    async def auto_export_task():
-        """Automatically export daily reports and charts."""
-        while True:
-            now = datetime.utcnow()
-            if now.hour == AUTO_EXPORT_HOUR and now.minute < AUTO_EXPORT_WINDOW_MINUTES:
-                try:
-                    summary_text = "Daily Summary Report"
-                    excel_file = export_to_excel()
+    # async def auto_export_task():
+    #     """Automatically export daily reports and charts."""
+    #     while True:
+    #         now = datetime.utcnow()
+    #         if now.hour == AUTO_EXPORT_HOUR and now.minute < AUTO_EXPORT_WINDOW_MINUTES:
+    #             try:
+    #                 summary_text = "Daily Summary Report"
+    #                 excel_file = export_to_excel()
 
-                    timeframe_ago = datetime.utcnow() - timedelta(hours=SUMMARY_LOOKBACK_HOURS)
-                    signal_ids = list(
-                        GroupMessages.objects.filter(timestamp__gte=timeframe_ago).values_list("id", flat=True)
-                    )
+    #                 timeframe_ago = datetime.utcnow() - timedelta(hours=SUMMARY_LOOKBACK_HOURS)
+    #                 signal_ids = list(
+    #                     GroupMessages.objects.filter(timestamp__gte=timeframe_ago).values_list("id", flat=True)
+    #                 )
 
-                    charts = []
-                    for msg_id in signal_ids:
-                        chart_file = generate_signal_progress_chart(msg_id)
-                        if chart_file:
-                            charts.append((msg_id, chart_file))
+    #                 charts = []
+    #                 for msg_id in signal_ids:
+    #                     chart_file = generate_signal_progress_chart(msg_id)
+    #                     if chart_file:
+    #                         charts.append((msg_id, chart_file))
 
-                    channel_chart_file = generate_channel_performance_chart()
+    #                 channel_chart_file = generate_channel_performance_chart()
 
-                    for admin in ADMINS:
-                        await client.send_file(
-                            admin,
-                            excel_file,
-                            caption=f"📊 Daily Report — {now.strftime('%Y-%m-%d')}\n\n{summary_text}"
-                        )
-                        for msg_id, chart_file in charts:
-                            await client.send_file(
-                                admin,
-                                chart_file,
-                                caption=f"📈 Signal Progress Chart — Message ID {msg_id}"
-                            )
-                        if channel_chart_file:
-                            await client.send_file(
-                                admin,
-                                channel_chart_file,
-                                caption=f"📈 Channel Performance Summary — Last {SUMMARY_LOOKBACK_HOURS} Hours"
-                            )
+    #                 for admin in ADMINS:
+    #                     await client.send_file(
+    #                         admin,
+    #                         excel_file,
+    #                         caption=f"📊 Daily Report — {now.strftime('%Y-%m-%d')}\n\n{summary_text}"
+    #                     )
+    #                     for msg_id, chart_file in charts:
+    #                         await client.send_file(
+    #                             admin,
+    #                             chart_file,
+    #                             caption=f"📈 Signal Progress Chart — Message ID {msg_id}"
+    #                         )
+    #                     if channel_chart_file:
+    #                         await client.send_file(
+    #                             admin,
+    #                             channel_chart_file,
+    #                             caption=f"📈 Channel Performance Summary — Last {SUMMARY_LOOKBACK_HOURS} Hours"
+    #                         )
 
-                    log(f"[AUTO-EXPORT] Sent daily report with charts at {now}")
-                except Exception as e:
-                    log(f"[AUTO-EXPORT ERROR] {e}")
-                await asyncio.sleep(60 * 65)
-            else:
-                await asyncio.sleep(30)
+    #                 log(f"[AUTO-EXPORT] Sent daily report with charts at {now}")
+    #             except Exception as e:
+    #                 log(f"[AUTO-EXPORT ERROR] {e}")
+    #             await asyncio.sleep(60 * 65)
+    #         else:
+    #             await asyncio.sleep(30)
 
-    @client.on(events.NewMessage)
-    async def manual_export_handler(event):
-        """Admin command handler for manual report generation."""
-        admin_ids = []
-        for admin in ADMINS:
-            try:
-                entity = await client.get_entity(admin)
-                admin_ids.append(entity.id)
-            except:
-                pass
+    # @client.on(events.NewMessage)
+    # async def manual_export_handler(event):
+    #     """Admin command handler for manual report generation."""
+    #     admin_ids = []
+    #     for admin in ADMINS:
+    #         try:
+    #             entity = await client.get_entity(admin)
+    #             admin_ids.append(entity.id)
+    #         except:
+    #             pass
 
-        if event.chat_id not in admin_ids:
-            return
+    #     if event.chat_id not in admin_ids:
+    #         return
 
-        if event.raw_text.lower() in ["/export", "/report"]:
-            await event.respond("📊 Generating report with charts, please wait...")
-            try:
-                summary_text = "Manual Summary Report"
-                excel_file = export_to_excel()
+    #     if event.raw_text.lower() in ["/export", "/report"]:
+    #         await event.respond("📊 Generating report with charts, please wait...")
+    #         try:
+    #             summary_text = "Manual Summary Report"
+    #             excel_file = export_to_excel()
 
-                timeframe_ago = datetime.utcnow() - timedelta(hours=SUMMARY_LOOKBACK_HOURS)
-                signal_ids = list(
-                    GroupMessages.objects.filter(timestamp__gte=timeframe_ago).values_list("id", flat=True)
-                )
+    #             timeframe_ago = datetime.utcnow() - timedelta(hours=SUMMARY_LOOKBACK_HOURS)
+    #             signal_ids = list(
+    #                 GroupMessages.objects.filter(timestamp__gte=timeframe_ago).values_list("id", flat=True)
+    #             )
 
-                charts = []
-                for msg_id in signal_ids:
-                    chart_file = generate_signal_progress_chart(msg_id)
-                    if chart_file:
-                        charts.append((msg_id, chart_file))
+    #             charts = []
+    #             for msg_id in signal_ids:
+    #                 chart_file = generate_signal_progress_chart(msg_id)
+    #                 if chart_file:
+    #                     charts.append((msg_id, chart_file))
 
-                channel_chart_file = generate_channel_performance_chart()
+    #             channel_chart_file = generate_channel_performance_chart()
 
-                await client.send_file(
-                    event.chat_id,
-                    excel_file,
-                    caption=f"📊 Manual Report — {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n\n{summary_text}"
-                )
-                for msg_id, chart_file in charts:
-                    await client.send_file(
-                        event.chat_id,
-                        chart_file,
-                        caption=f"📈 Signal Progress Chart — Message ID {msg_id}"
-                    )
-                if channel_chart_file:
-                    await client.send_file(
-                        event.chat_id,
-                        channel_chart_file,
-                        caption=f"📈 Channel Performance Summary — Last {SUMMARY_LOOKBACK_HOURS} Hours"
-                    )
+    #             await client.send_file(
+    #                 event.chat_id,
+    #                 excel_file,
+    #                 caption=f"📊 Manual Report — {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n\n{summary_text}"
+    #             )
+    #             for msg_id, chart_file in charts:
+    #                 await client.send_file(
+    #                     event.chat_id,
+    #                     chart_file,
+    #                     caption=f"📈 Signal Progress Chart — Message ID {msg_id}"
+    #                 )
+    #             if channel_chart_file:
+    #                 await client.send_file(
+    #                     event.chat_id,
+    #                     channel_chart_file,
+    #                     caption=f"📈 Channel Performance Summary — Last {SUMMARY_LOOKBACK_HOURS} Hours"
+    #                 )
 
-                await event.respond("✅ Report and charts sent successfully.")
-            except Exception as e:
-                await event.respond(f"❌ Failed to generate report: {e}")
+    #             await event.respond("✅ Report and charts sent successfully.")
+    #         except Exception as e:
+    #             await event.respond(f"❌ Failed to generate report: {e}")
 
     asyncio.create_task(live_price_monitor_task())
-    asyncio.create_task(auto_export_task())
+    # asyncio.create_task(auto_export_task())
     await client.run_until_disconnected()
