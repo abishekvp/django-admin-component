@@ -1,16 +1,11 @@
-import asyncio
-import time
 from telethon import TelegramClient, events
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
-import re, sqlite3, json, requests
-from io import BytesIO
+import re, json, requests, time
 from app.models import GroupMessages, DeletedMessages, Updates
 from app.constants import *
 from asgiref.sync import sync_to_async
 from app.log import log
-from matplotlib import pyplot as plt
-import pandas as pd
 
 # ---------------- CONFIGURABLE PARAMETERS ---------------- #
 
@@ -179,13 +174,14 @@ def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
     message.parsed_message = json.dumps(parsed)
     message.save()
 
-def export_to_excel():
-    qs = GroupMessages.objects.all().values()
-    df = pd.DataFrame(qs)
-    output = BytesIO()
-    df.to_excel(output, index=False)
-    output.seek(0)
-    return output
+# def export_to_excel():
+#     import pandas as pd
+#     qs = GroupMessages.objects.all().values()
+#     df = pd.DataFrame(qs)
+#     output = BytesIO()
+#     df.to_excel(output, index=False)
+#     output.seek(0)
+#     return output
 
 @sync_to_async
 def get_recent_signals(timeframe_ago):
