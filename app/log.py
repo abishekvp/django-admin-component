@@ -8,8 +8,8 @@ def log(message, log_level=DEBUG):
         log_level=log_level
     )
 
-# def alog(message, log_level=DEBUG):
-#     sync_to_async(Log.objects.create)(
-#         log_message=message,
-#         log_level=log_level
-#     )
+async def alog(message, log_level=DEBUG):
+    await sync_to_async(Log.objects.create)(
+        log_message=message,
+        log_level=log_level
+    )
