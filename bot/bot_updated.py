@@ -5,7 +5,7 @@ import re, json, requests, time
 from app.models import GroupMessages, DeletedMessages, Updates
 from app.constants import *
 from asgiref.sync import sync_to_async
-from app.log import log
+from app.log import log, alog
 
 # ---------------- CONFIGURABLE PARAMETERS ---------------- #
 
@@ -22,7 +22,7 @@ SUMMARY_LOOKBACK_HOURS = 24
 client = None
 
 def ensure_client():
-    log("Ensuring Telegram client...")
+    alog("Ensuring Telegram client...")
     global client
     if client is None:
         client = TelegramClient('signal_bot', API_ID, API_HASH)
@@ -153,7 +153,7 @@ def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
         try:
             client.edit_message(dest_id, fwd_id, updated_text)
         except Exception as e:
-            log(f"[EDIT ERROR] {e}")
+            alog(f"[EDIT ERROR] {e}")
 
     message.parsed_message = json.dumps(parsed)
     message.save()
@@ -196,15 +196,15 @@ def save_message(parsed, event, sent_id, live_price, status='active', reason='')
 
 
 async def main():
-    log("[BOT] Starting Telegram client...")
+    alog("[BOT] Starting Telegram client...")
     ensure_client()
-    log("[BOT] Telegram client ensured.")
+    alog("[BOT] Telegram client ensured.")
     await client.start(phone=PHONE)
-    log("[BOT] Telegram client started.")
+    alog("[BOT] Telegram client started.")
     
     @client.on(events.NewMessage)
     async def handler(event):
-        log("[BOT] New message received.")
+        alog("[BOT] New message received.")
         chat = await event.get_chat()
         username = chat.username or ""
         if username.lower() not in [s.replace('@', '').lower() for s in SOURCES]:
@@ -274,8 +274,8 @@ async def main():
                     message_id=msg.message_id,
                     message=msg.message
                 )
-                log(f"[DELETED] Forwarded message {msg.message_id} removed, saved in DB")
+                alog(f"[DELETED] Forwarded message {msg.message_id} removed, saved in DB")
             except Exception as e:
-                log(f"[DELETE ERROR] {e}")
+                alog(f"[DELETE ERROR] {e}")
 
     await client.run_until_disconnected()
