@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 import re, sqlite3, json, requests
 from io import BytesIO
 import matplotlib.pyplot as plt
-import pandas as pd
 from app.constants import *
 
 # ---------------- CONFIGURABLE PARAMETERS ---------------- #
@@ -266,14 +265,15 @@ def generate_channel_performance_chart(hours_lookback=24):
     output.seek(0)
     return output
 
-def export_to_excel():
-    conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query("SELECT * FROM messages", conn)
-    conn.close()
-    output = BytesIO()
-    df.to_excel(output, index=False)
-    output.seek(0)
-    return output
+# def export_to_excel():
+#     import pandas as pd
+#     conn = sqlite3.connect(DB_PATH)
+#     df = pd.read_sql_query("SELECT * FROM messages", conn)
+#     conn.close()
+#     output = BytesIO()
+#     df.to_excel(output, index=False)
+#     output.seek(0)
+#     return output
 
 # ---------------- MAIN FUNCTION ---------------- #
 async def main():
