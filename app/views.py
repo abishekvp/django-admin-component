@@ -12,39 +12,48 @@ from app.log import log
 from bot.bot_onprem import run_bot as onprem_run
 from datetime import datetime, timedelta
 
-
 bot_thread = None
 bot_stop_event = threading.Event()
 
 
-async def run_bot(stop_event):
-    """Run the bot logic asynchronously."""
+def log(message: str):
+    """Safe logging for Django + threads."""
     try:
-        await bot_updated.main()  # await the main coroutine directly
+        Log.objects.create(message=message)
+    except Exception as e:
+        print(f"[LOG ERROR] {e}: {message}")
+
+
+async def run_bot(stop_event):
+    """Run bot logic asynchronously in a persistent loop."""
+    client = bot_updated.get_client()
+
+    try:
+        await bot_updated.main()  # Run your async bot entry point
+    except asyncio.CancelledError:
+        log("[BOT] Cancelled.")
     except Exception as e:
         log(f"[BOT ERROR] {e}")
     finally:
-        # Stop event handling if needed
-        log("[BOT] Stop signal received. Disconnecting...")
-        client = bot_updated.get_client()
-        if client:
+        if client.is_connected():
             await client.disconnect()
         log("[BOT] Disconnected cleanly.")
 
 
 def run_bot_thread(stop_event):
-    """Run the asyncio bot loop safely inside a thread."""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
+    """Thread-safe entry point for asyncio bot."""
     try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(run_bot(stop_event))
+    except Exception as e:
+        log(f"[THREAD ERROR] {e}")
     finally:
         loop.close()
 
 
 def start_bot_thread():
-    """Start the Telegram bot in a background thread."""
+    """Start bot in background thread with isolated event loop."""
     global bot_thread, bot_stop_event
 
     if bot_thread and bot_thread.is_alive():
@@ -63,7 +72,7 @@ def start_bot_thread():
 
 
 def stop_bot_thread():
-    """Stop the Telegram bot gracefully."""
+    """Gracefully stop bot."""
     global bot_thread, bot_stop_event
 
     if not bot_thread or not bot_thread.is_alive():
