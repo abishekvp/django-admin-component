@@ -1,0 +1,114 @@
+/* Reset styles for body and html */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Sign-In Section (full-screen background) */
+.sign {
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Centered Notification Container */
+.notification-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 9999; /* Ensure it is above other content */
+  pointer-events: none; /* Prevent the container from blocking interaction with other elements */
+}
+
+/* Modern Alert Style */
+.modern-alert {
+  background-color: rgba(0, 0, 0, 0.8); /* Dark background */
+  color: white;
+  border-radius: 10px; /* Rounded corners */
+  padding: 20px;
+  margin: 10px;
+  max-width: 80%;
+  width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: auto; /* Make sure the alert is interactive */
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Fade-in Animation for Alerts */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Custom Close Button */
+.modern-alert .close {
+  color: white;
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+.modern-alert .close:hover {
+  opacity: 1;
+}
+
+.alert-dismissible .close {
+  position: absolute;
+  top: 45%;
+  right: 0;
+  transform: translateY(-50%);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* Custom alert colors based on message tags */
+.alert-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.alert-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.alert-warning {
+  background-color: #ffc107;
+  color: black;
+}
+
+.alert-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+/* To ensure proper display of notification spacing */
+.notification-container > .alert {
+  margin-top: 20px;
+}
+
+/* Custom button and input styles for Sign-In form */
+.card .form-control {
+  border-radius: 5px;
+}
+
+.card .btn {
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.card .custom-btn {
+  font-weight: bold;
+}
