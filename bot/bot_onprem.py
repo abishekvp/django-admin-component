@@ -193,6 +193,7 @@ async def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
     cursor.execute("UPDATE messages SET parsed_json=?, updates_json=? WHERE id=?", (json.dumps(parsed), json.dumps(updates_json), msg_id))
     conn.commit(); conn.close()
 
+
 # ---------------- SIGNAL PROGRESS CHART ---------------- #
 def generate_signal_progress_chart(message_id):
     conn = sqlite3.connect(DB_PATH)

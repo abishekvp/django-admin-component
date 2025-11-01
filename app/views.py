@@ -8,34 +8,39 @@ import asyncio
 import threading
 from app.models import Log
 from app.constants import DEBUG, ERROR, INFO
-from app.log import log, alog
+from app.log import log
 from bot.bot_onprem import run_bot as onprem_run
+from datetime import datetime, timedelta
+
 
 bot_thread = None
 bot_stop_event = threading.Event()
+
+
+async def run_bot(stop_event):
+    """Run the bot logic asynchronously."""
+    try:
+        await bot_updated.main()  # await the main coroutine directly
+    except Exception as e:
+        log(f"[BOT ERROR] {e}")
+    finally:
+        # Stop event handling if needed
+        log("[BOT] Stop signal received. Disconnecting...")
+        client = bot_updated.get_client()
+        if client:
+            await client.disconnect()
+        log("[BOT] Disconnected cleanly.")
+
 
 def run_bot_thread(stop_event):
     """Run the asyncio bot loop safely inside a thread."""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(run_bot(stop_event))
-    loop.close()
 
-
-async def run_bot(stop_event):
-    """Run the async bot logic."""
-    # Run the bot's async main logic (your existing code)
-    asyncio.create_task(bot_updated.main())
-
-    # Keep checking for stop signal
-    while not stop_event.is_set():
-        await asyncio.sleep(1)
-
-    await alog("[BOT] Stop signal received. Disconnecting...")
-    client = bot_updated.get_client()
-    if client:
-        await client.disconnect()
-    await alog("[BOT] Disconnected cleanly.")
+    try:
+        loop.run_until_complete(run_bot(stop_event))
+    finally:
+        loop.close()
 
 
 def start_bot_thread():
@@ -70,13 +75,14 @@ def stop_bot_thread():
     log("[BOT] Stopped successfully.")
     return True
 
+
+# --- Django views ---
 def start_bot(request):
-    # started = start_bot_thread()
-    onprem_run()
-    # return JsonResponse({
-    #     "message": "Bot started successfully" if started else "Bot already running",
-    #     "status": 200 if started else 409
-    # })
+    started = start_bot_thread()
+    return JsonResponse({
+        "message": "Bot started successfully" if started else "Bot already running",
+        "status": 200 if started else 409
+    })
 
 
 def stop_bot(request):
@@ -85,6 +91,7 @@ def stop_bot(request):
         "message": "Bot stopped" if stopped else "Bot not running",
         "status": 200 if stopped else 404
     })
+
 
 @login_required(login_url='signin')
 def dashboard(request):
