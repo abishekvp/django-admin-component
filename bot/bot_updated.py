@@ -22,6 +22,7 @@ SUMMARY_LOOKBACK_HOURS = 24
 client = None
 
 def ensure_client():
+    log("Ensuring Telegram client...")
     global client
     if client is None:
         client = TelegramClient('signal_bot', API_ID, API_HASH)
@@ -97,23 +98,6 @@ def format_signal(parsed, live_price=None):
     if live_price: msg += f"📊 Live Price: {live_price}\n"
     msg += f"🕒 Time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}"
     return msg.strip()
-
-def save_message(parsed,event,forwarded_msg_id,live_price,status="active",reason="",exit_event=""):
-    GroupMessages.objects.create(
-        group_id=str(event.chat_id),
-        group_username=f"@{event.chat.username}" if event.chat.username else "",
-        message_id=str(event.id),
-        message=event.message.text,
-        parsed_message=json.dumps(parsed),
-        status=status,
-        entry_low=str(parsed.get('entry_range', {}).get('low')),
-        entry_high=str(parsed.get('entry_range', {}).get('high')),
-        tp_list=",".join([str(tp) for tp in parsed.get('tp_list', [])]),
-        sl=str(parsed.get('sl')),
-        decision_reason=reason,
-        live_price=str(live_price),
-        exit_event=exit_event
-    )
 
 def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
     try:
@@ -212,13 +196,15 @@ def save_message(parsed, event, sent_id, live_price, status='active', reason='')
 
 
 async def main():
+    log("[BOT] Starting Telegram client...")
     ensure_client()
-    
+    log("[BOT] Telegram client ensured.")
     await client.start(phone=PHONE)
     log("[BOT] Telegram client started.")
     
     @client.on(events.NewMessage)
     async def handler(event):
+        log("[BOT] New message received.")
         chat = await event.get_chat()
         username = chat.username or ""
         if username.lower() not in [s.replace('@', '').lower() for s in SOURCES]:
