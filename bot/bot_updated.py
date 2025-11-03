@@ -178,6 +178,7 @@ def get_recent_signals(timeframe_ago):
 
 @sync_to_async
 def save_message(parsed, event, sent_id, live_price, status='active', reason=''):
+    log(f"[SAVE] Saving message from {event.chat.username} with status {status} due to {reason}")
     GroupMessages.objects.create(
         group_id=str(event.chat_id),
         group_username=event.chat.username or "",
@@ -240,6 +241,7 @@ async def main():
                     break
 
         if duplicate_found:
+            log(f"[DUPLICATE] Found duplicate signal from {event.chat.username} ({parsed['direction']}) for range {entry_low}-{entry_high}.")
             await save_message(parsed, event, None, live_price, "skipped", "duplicate")  # ✅
             return
 

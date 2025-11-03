@@ -6,6 +6,7 @@ urlpatterns = [
     path('dashboard', views.dashboard, name="dashboard"),
     path('start-bot', views.start_bot, name="start-bot"),
     path('stop-bot', views.stop_bot, name="stop-bot"),
+    path('logs', views.logs, name="logs"),
 
     # Components
     path('index', views.index, name="index"),

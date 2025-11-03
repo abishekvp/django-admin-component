@@ -93,6 +93,10 @@ def stop_bot(request):
 def dashboard(request):
     return render(request, 'dashboard.html')
 
+def logs(request):
+    logs = Log.objects.all().order_by('timestamp')[:1000]  # Fetch latest 1000 logs
+    return render(request, 'logs.html', {'logs': logs})
+
 # Components
 def index(request):
     return render(request, 'index.html')
