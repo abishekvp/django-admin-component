@@ -3,13 +3,13 @@ from . import views
 
 urlpatterns = [
     path('', views.dashboard, name="index"),
+    path('index', views.dashboard, name="index"),
     path('dashboard', views.dashboard, name="dashboard"),
     path('start-bot', views.start_bot, name="start-bot"),
     path('stop-bot', views.stop_bot, name="stop-bot"),
     path('logs', views.logs, name="logs"),
 
     # Components
-    path('index', views.index, name="index"),
     path('cp_datetime', views.cp_datetime, name="cp_datetime"),
     path('cp_bstoggle', views.cp_bstoggle, name="cp_bstoggle"),
     path('ui_typography', views.ui_typography, name="ui_typography"),
