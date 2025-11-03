@@ -3,7 +3,6 @@ from telethon import TelegramClient, events
 from datetime import datetime, timedelta
 import re, sqlite3, json, requests
 from io import BytesIO
-import matplotlib.pyplot as plt
 from app.constants import *
 
 # ---------------- CONFIGURABLE PARAMETERS ---------------- #
@@ -194,43 +193,44 @@ async def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
 
 
 # ---------------- SIGNAL PROGRESS CHART ---------------- #
-def generate_signal_progress_chart(message_id):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT parsed_json, updates_json FROM messages WHERE id=?", (message_id,))
-    row = cursor.fetchone()
-    if not row:
-        conn.close()
-        return None
-    parsed = json.loads(row[0])
-    updates = json.loads(row[1]) if row[1] else []
-    hit_events = [u for u in updates if u["type"].startswith("TP") or u["type"]=="SL" or u["type"]=="BE"]
-    if not hit_events:
-        conn.close()
-        return None
-    times = [datetime.fromisoformat(u["event_time"]) for u in updates]
-    prices = [u["event_price"] for u in updates]
-    if not times:
-        conn.close()
-        return None
-    plt.figure(figsize=(10,6))
-    plt.plot(times, prices, label="Live Price", marker='o', color='blue')
-    for i, tp in enumerate(parsed.get("tp_list", []),1):
-        plt.hlines(tp, times[0], times[-1], colors='green', linestyles='dashed', label=f"TP{i}")
-    if parsed.get("sl"):
-        plt.hlines(parsed["sl"], times[0], times[-1], colors='red', linestyles='dashed', label="SL")
-    plt.xlabel("Time")
-    plt.ylabel("Price")
-    plt.title(f"{parsed['pair']} {parsed['direction']} Signal Progress")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    output = BytesIO()
-    plt.savefig(output, format='png')
-    plt.close()
-    output.seek(0)
-    conn.close()
-    return output
+# def generate_signal_progress_chart(message_id):
+#     import matplotlib.pyplot as plt
+#     conn = sqlite3.connect(DB_PATH)
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT parsed_json, updates_json FROM messages WHERE id=?", (message_id,))
+#     row = cursor.fetchone()
+#     if not row:
+#         conn.close()
+#         return None
+#     parsed = json.loads(row[0])
+#     updates = json.loads(row[1]) if row[1] else []
+#     hit_events = [u for u in updates if u["type"].startswith("TP") or u["type"]=="SL" or u["type"]=="BE"]
+#     if not hit_events:
+#         conn.close()
+#         return None
+#     times = [datetime.fromisoformat(u["event_time"]) for u in updates]
+#     prices = [u["event_price"] for u in updates]
+#     if not times:
+#         conn.close()
+#         return None
+#     plt.figure(figsize=(10,6))
+#     plt.plot(times, prices, label="Live Price", marker='o', color='blue')
+#     for i, tp in enumerate(parsed.get("tp_list", []),1):
+#         plt.hlines(tp, times[0], times[-1], colors='green', linestyles='dashed', label=f"TP{i}")
+#     if parsed.get("sl"):
+#         plt.hlines(parsed["sl"], times[0], times[-1], colors='red', linestyles='dashed', label="SL")
+#     plt.xlabel("Time")
+#     plt.ylabel("Price")
+#     plt.title(f"{parsed['pair']} {parsed['direction']} Signal Progress")
+#     plt.legend()
+#     plt.grid(True)
+#     plt.tight_layout()
+#     output = BytesIO()
+#     plt.savefig(output, format='png')
+#     plt.close()
+#     output.seek(0)
+#     conn.close()
+#     return output
 
 # ---------------- CHANNEL PERFORMANCE CHART ---------------- #
 def generate_channel_performance_chart(hours_lookback=24):
