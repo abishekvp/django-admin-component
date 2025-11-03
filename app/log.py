@@ -4,7 +4,7 @@ from app.models import Log
 from app.constants import *
 
 @sync_to_async
-def _save_log(message, level):
+def _save_log(message, level=DEBUG):
     Log.objects.create(log_message=message, log_level=level)
 
 def log(message, level=DEBUG):

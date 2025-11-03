@@ -11,15 +11,6 @@ from app.log import log
 bot_thread = None
 bot_stop_event = threading.Event()
 
-
-def log(message: str):
-    """Safe logging for Django + threads."""
-    try:
-        Log.objects.create(message=message)
-    except Exception as e:
-        print(f"[LOG ERROR] {e}: {message}")
-
-
 async def run_bot(stop_event):
     """Run bot logic asynchronously in a persistent loop."""
     client = bot_updated.get_client()
