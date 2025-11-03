@@ -1,16 +1,12 @@
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from bot import bot_updated
 import asyncio
 import threading
 from app.models import Log
 from app.constants import DEBUG, ERROR, INFO
 from app.log import log
-from bot.bot_onprem import run_bot as onprem_run
-from datetime import datetime, timedelta
 
 bot_thread = None
 bot_stop_event = threading.Event()
