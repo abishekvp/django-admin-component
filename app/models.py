@@ -33,4 +33,4 @@ class Updates(models.Model):
 class Log(models.Model):
     log_message = models.TextField()
     log_level = models.CharField(max_length=32)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)

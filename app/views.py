@@ -94,8 +94,13 @@ def dashboard(request):
     return render(request, 'dashboard.html')
 
 def logs(request):
-    logs = Log.objects.all().order_by('timestamp')[:1000]  # Fetch latest 1000 logs
-    return render(request, 'logs.html', {'logs': logs})
+    logs = Log.objects.all()
+    i = len(logs) - 1
+    sorted_logs = []
+    while i >= 0:
+        sorted_logs.append(logs[i])
+        i -= 1
+    return render(request, 'logs.html', {'logs': sorted_logs})
 
 # Components
 def index(request):

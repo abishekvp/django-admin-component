@@ -89,6 +89,7 @@ def parse_signal(text):
     }
 
 def format_signal(parsed, live_price=None):
+    log("Formatting signal message...")
     emoji = '🟢' if parsed["direction"] == "BUY" else '🔴'
     msg = f"{emoji} {parsed['pair']} {parsed['direction']} Signal\n"
     msg += f"Entry: {parsed['entry_range']['low']} to {parsed['entry_range']['high']}\n"
@@ -246,6 +247,7 @@ async def main():
             return
 
         if conflict_found:
+            log(f"[CONFLICT] Found conflicting signal from {event.chat.username} ({parsed['direction']}) for range {entry_low}-{entry_high}.")
             await save_message(parsed, event, None, live_price, "skipped", "conflict")  # ✅
             for admin in ADMINS:
                 await client.send_message(
@@ -255,11 +257,18 @@ async def main():
             return
 
         formatted_msg = format_signal(parsed, live_price)
-        sent = await client.send_message(DESTINATION, formatted_msg)
+        log(f"[FORWARD] Forwarding message from {event.chat.username}: {formatted_msg}")
+        try:
+            sent = await client.send_message(DESTINATION, formatted_msg)
+            log(f"[FORWARDED] Message forwarded successfully with ID {sent.id}.")
+        except Exception as e:
+            log(f"[FORWARD ERROR] {e}")
+            await save_message(parsed, event, None, live_price, "skipped", "forward failed")
         await save_message(parsed, event, sent.id, live_price)
 
     @client.on(events.MessageDeleted)
     async def deleted_handler(event):
+        log("[BOT] Message deletion detected.")
         deleted_ids = event.deleted_ids
         if not deleted_ids:
             return
@@ -267,6 +276,7 @@ async def main():
         messages = GroupMessages.objects.filter(message_id__in=deleted_ids, status='active')
         for msg in messages:
             try:
+                log(f"[DELETE] Deleting forwarded message {msg.message_id} in destination.")
                 client.delete_messages(msg.group_id, msg.message_id)
                 msg.status = 'deleted'
                 msg.save()
