@@ -1,5 +1,10 @@
 from django.db import models
 
+class Groups(models.Model):
+    group_username = models.CharField(max_length=255)
+    group_title = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+
 class GroupMessages(models.Model):
     group_id = models.CharField(max_length=64)
     group_username = models.CharField(max_length=255)

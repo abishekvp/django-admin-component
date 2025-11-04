@@ -102,6 +102,43 @@ def logs(request):
         i -= 1
     return render(request, 'logs.html', {'logs': sorted_logs})
 
+# Group Management
+@login_required(login_url='signin')
+def disable_group(request, group_id):
+    from app.models import Groups
+    try:
+        group = Groups.objects.get(id=group_id)
+        group.is_active = False
+        group.save()
+        log(f"[GROUP] Disabled group {group.group_username} (ID: {group_id})", INFO)
+    except Groups.DoesNotExist:
+        log(f"[GROUP ERROR] Group with ID {group_id} does not exist", ERROR)
+    return redirect('dashboard')
+
+@login_required(login_url='signin')
+def enable_group(request, group_id):
+    from app.models import Groups
+    try:
+        group = Groups.objects.get(id=group_id)
+        group.is_active = True
+        group.save()
+        log(f"[GROUP] Enabled group {group.group_username} (ID: {group_id})", INFO)
+    except Groups.DoesNotExist:
+        log(f"[GROUP ERROR] Group with ID {group_id} does not exist", ERROR)
+    return redirect('dashboard')
+
+@login_required(login_url='signin')
+def delete_group(request, group_id):
+    from app.models import Groups
+    try:
+        group = Groups.objects.get(id=group_id)
+        group_username = group.group_username
+        group.delete()
+        log(f"[GROUP] Deleted group {group_username} (ID: {group_id})", INFO)
+    except Groups.DoesNotExist:
+        log(f"[GROUP ERROR] Group with ID {group_id} does not exist", ERROR)
+    return redirect('dashboard')
+
 # Components
 def index(request):
     return render(request, 'index.html')

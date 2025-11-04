@@ -26,146 +26,61 @@
                             <i class="ti-pencil-alt"></i> Signal Source Groups
                         </div>
                         <div class="tools">
-                            <a class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Task"><i class="ti-plus"></i></a>
-                            <a class="btn btn-sm btn-outline-secondary" data-toggle="dropdown" aria-expanded="false">
-                                <i class="ti-settings"></i> Settings <i class="ti-arrow-circle-down"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item">Action</a>
-                                <a class="dropdown-item">Another Action</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item">Some Setting</a>
-                            </div>
+                            <button onclick="add_source_group()" class="btn btn-sm btn-primary" title="Add New Source Group"><i class="ti-plus"></i></button>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="row py-3">
-                            <div class="col-md-3 col-6 d-flex flex-column align-items-center">
-                                <h2 class="text-primary bold">10</h2>
-                                Active
-                            </div>
-                            <div class="col-md-3 col-6 d-flex flex-column align-items-center">
-                                <h2 class="text-success bold">2</h2>
-                                In-Progress
-                            </div>
-                            <div class="col-md-3 col-6 d-flex flex-column align-items-center">
-                                <h2 class="text-warning bold">3</h2>
-                                On-Hold
-                            </div>
-                            <div class="col-md-3 col-6 d-flex flex-column align-items-center">
-                                <h2 class="text-secondary bold">4</h2>
-                                Completed
-                            </div>
-                        </div>
-
                         <div class="row">
                             <div class="col-md-12 scrollbox-md" data-simplebar>
                                 <ul class="list-group list-group-flush">
+                                    {% for group in groups %}
                                     <li class="list-group-item">
                                         <div class="d-flex align-items-baseline">
-                                            <!-- <div class="custom-checkbox custom-control">
-                                                <input type="checkbox" class="custom-control-input" id="checkbox1" name="checkbox1">
-                                                <label class="custom-control-label" for="checkbox1">&nbsp;</label>
-                                            </div> -->
                                             <div class="pl-4">
-                                                <strong>Doctor Appointment</strong>
+                                                <strong>{{ group.group_username }}</strong>
                                             </div>
                                             <div class="ml-auto text-right">
-                                                <!-- <a href="javascript:;" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a> -->
-                                                <a href="javascript:;" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
+                                                <a href="{% url 'disable-group' group.id %}" class="btn btn-sm btn-warning mb-2"><i class="ti-na"></i></a>
+                                                <a href="{% url 'enable-group' group.id %}" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
+                                                <a href="{% url 'delete-group' group.id %}" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
                                             </div>
                                         </div>
                                     </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- My Tasks -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <div class="caption">
+                            <i class="ti-pencil-alt"></i> Configuration Values
+                        </div>
+                        <div class="tools">
+                            <button onclick="add_conf_value()" class="btn btn-sm btn-primary" title="Add New Configuration Value"><i class="ti-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 scrollbox-md" data-simplebar>
+                                <ul class="list-group list-group-flush">
+                                    {% for conf in config_values %}
                                     <li class="list-group-item">
                                         <div class="d-flex align-items-baseline">
-                                            <div class="custom-checkbox custom-control">
-                                                <input type="checkbox" class="custom-control-input" id="checkbox2" name="checkbox2">
-                                                <label class="custom-control-label" for="checkbox2">&nbsp;</label>
-                                            </div>
                                             <div class="pl-4">
-                                                <strong>Write Unit Test <i class="ti-timer text-success"></i></strong><br>Unit test for dashboard widgets
+                                                <strong>{{ conf.key }}</strong>: {{ conf.value }}
                                             </div>
                                             <div class="ml-auto text-right">
-                                                <a href="javascript:;" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
-                                                <a href="javascript:;" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
+                                                <a href="{% url 'edit-conf' conf.id %}" class="btn btn-sm btn-warning mb-2"><i class="ti-pencil-alt"></i></a>
+                                                <a href="{% url 'delete-conf' conf.id %}" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
                                             </div>
                                         </div>
                                     </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-baseline">
-                                            <div class="custom-checkbox custom-control">
-                                                <input type="checkbox" class="custom-control-input" id="checkbox3" name="checkbox3">
-                                                <label class="custom-control-label" for="checkbox3">&nbsp;</label>
-                                            </div>
-                                            <div class="pl-4">
-                                                <strong>Annual Report <i class="ti-notepad text-primary"></i></strong><br>Design annual report cover
-                                            </div>
-                                            <div class="ml-auto text-right">
-                                                <a href="javascript:;" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
-                                                <a href="javascript:;" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-baseline">
-                                            <div class="custom-checkbox custom-control">
-                                                <input type="checkbox" class="custom-control-input" id="checkbox4" name="checkbox4">
-                                                <label class="custom-control-label" for="checkbox4">&nbsp;</label>
-                                            </div>
-                                            <div class="pl-4">
-                                                <strong>Management Meeting <i class="ti-notepad text-primary"></i></strong><br>Coming up meeting with staffs
-                                            </div>
-                                            <div class="ml-auto text-right">
-                                                <a href="javascript:;" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
-                                                <a href="javascript:;" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-baseline">
-                                            <div class="custom-checkbox custom-control">
-                                                <input type="checkbox" class="custom-control-input" id="checkbox5" name="checkbox5">
-                                                <label class="custom-control-label" for="checkbox5">&nbsp;</label>
-                                            </div>
-                                            <div class="pl-4">
-                                                <strong>Merge Development <i class="ti-timer text-success"></i></strong><br>Merge development branch with master
-                                            </div>
-                                            <div class="ml-auto text-right">
-                                                <a href="javascript:;" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
-                                                <a href="javascript:;" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-baseline">
-                                            <div class="custom-checkbox custom-control">
-                                                <input type="checkbox" class="custom-control-input" id="checkbox6" name="checkbox6">
-                                                <label class="custom-control-label" for="checkbox6">&nbsp;</label>
-                                            </div>
-                                            <div class="pl-4">
-                                                <strong>Build Report <i class="ti-hand-open text-warning"></i></strong><br>Build report graph for dashboard
-                                            </div>
-                                            <div class="ml-auto text-right">
-                                                <a href="javascript:;" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
-                                                <a href="javascript:;" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-baseline">
-                                            <div class="custom-checkbox custom-control">
-                                                <input type="checkbox" class="custom-control-input" id="checkbox7" name="checkbox7">
-                                                <label class="custom-control-label" for="checkbox7">&nbsp;</label>
-                                            </div>
-                                            <div class="pl-4">
-                                                <strong>Add New Vendor <i class="ti-hand-open text-warning"></i></strong><br>Add new third-party vendor
-                                            </div>
-                                            <div class="ml-auto text-right">
-                                                <a href="javascript:;" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
-                                                <a href="javascript:;" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
-                                            </div>
-                                        </div>
-                                    </li>
+                                    {% endfor %}
                                 </ul>
                             </div>
                         </div>

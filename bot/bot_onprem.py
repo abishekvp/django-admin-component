@@ -3,7 +3,7 @@ from telethon import TelegramClient, events
 from datetime import datetime, timedelta
 import re, sqlite3, json, requests
 from io import BytesIO
-from app.constants import *
+from constants import *
 
 # ---------------- CONFIGURABLE PARAMETERS ---------------- #
 
@@ -232,39 +232,6 @@ async def mark_update(msg_id, update_type, price, detected_by, dest_id, fwd_id):
 #     conn.close()
 #     return output
 
-# ---------------- CHANNEL PERFORMANCE CHART ---------------- #
-def generate_channel_performance_chart(hours_lookback=24):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    timeframe_ago = (datetime.utcnow() - timedelta(hours=hours_lookback)).isoformat()
-    cursor.execute("""
-        SELECT source_chat_username, updates_json FROM messages WHERE source_msg_date >= ?
-    """, (timeframe_ago,))
-    rows = cursor.fetchall()
-    conn.close()
-    if not rows:
-        return None
-    channel_stats = {}
-    for chat_username, updates_json in rows:
-        updates = json.loads(updates_json) if updates_json else []
-        tp_hits = len([u for u in updates if u["type"].startswith("TP")])
-        sl_hits = sum(1 for u in updates if u["type"] == "SL")
-        channel_stats[chat_username] = channel_stats.get(chat_username, 0) + tp_hits
-    plt.figure(figsize=(10,6))
-    channels = list(channel_stats.keys())
-    hits = list(channel_stats.values())
-    plt.bar(channels, hits, color='teal')
-    plt.xlabel("Source Channel")
-    plt.ylabel("TP Hits")
-    plt.title(f"Channel Performance — Last {hours_lookback} Hours (TP Count)")
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-    output = BytesIO()
-    plt.savefig(output, format='png')
-    plt.close()
-    output.seek(0)
-    return output
-
 # def export_to_excel():
 #     import pandas as pd
 #     conn = sqlite3.connect(DB_PATH)
@@ -430,3 +397,5 @@ async def main():
 # ---------------- RUN BOT ---------------- #
 def run_bot():
     asyncio.run(main())
+
+run_bot()

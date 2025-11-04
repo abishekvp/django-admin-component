@@ -9,6 +9,11 @@ urlpatterns = [
     path('stop-bot', views.stop_bot, name="stop-bot"),
     path('logs', views.logs, name="logs"),
 
+    # Group Management
+    path('disable-group/<int:group_id>', views.disable_group, name="disable-group"),
+    path('enable-group/<int:group_id>', views.enable_group, name="enable-group"),
+    path('delete-group/<int:group_id>', views.delete_group, name="delete-group"),
+
     # Components
     path('cp_datetime', views.cp_datetime, name="cp_datetime"),
     path('cp_bstoggle', views.cp_bstoggle, name="cp_bstoggle"),
