@@ -23,26 +23,29 @@
                 <div class="card mb-3">
                     <div class="card-header">
                         <div class="caption">
-                            <i class="ti-pencil-alt"></i> Signal Source Groups
+                            <i class="ti-pencil-alt"></i> Signal Sources
                         </div>
                         <div class="tools">
-                            <button onclick="add_source_group()" class="btn btn-sm btn-primary" title="Add New Source Group"><i class="ti-plus"></i></button>
+                            <button data-toggle="modal" data-target="#addSource" class="btn btn-sm btn-primary" title="Add New Source Group"><i class="ti-plus"></i></button>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-12 scrollbox-md" data-simplebar>
                                 <ul class="list-group list-group-flush">
-                                    {% for group in groups %}
+                                    {% for source in sources %}
                                     <li class="list-group-item">
                                         <div class="d-flex align-items-baseline">
                                             <div class="pl-4">
-                                                <strong>{{ group.group_username }}</strong>
+                                                <strong>{{ source.title }}</strong><br>{{ source.username }}
                                             </div>
                                             <div class="ml-auto text-right">
-                                                <a href="{% url 'disable-group' group.id %}" class="btn btn-sm btn-warning mb-2"><i class="ti-na"></i></a>
-                                                <a href="{% url 'enable-group' group.id %}" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
-                                                <a href="{% url 'delete-group' group.id %}" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
+                                                {% if source.is_active %}
+                                                <a href="{% url 'disable-source' source.id %}" class="btn btn-sm btn-warning mb-2"><i class="ti-na"></i></a>
+                                                {% else %}
+                                                <a href="{% url 'enable-source' source.id %}" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
+                                                <a href="{% url 'delete-source' source.id %}" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </li>
@@ -58,25 +61,29 @@
                 <div class="card mb-3">
                     <div class="card-header">
                         <div class="caption">
-                            <i class="ti-pencil-alt"></i> Configuration Values
+                            <i class="ti-pencil-alt"></i> Configurations
                         </div>
                         <div class="tools">
-                            <button onclick="add_conf_value()" class="btn btn-sm btn-primary" title="Add New Configuration Value"><i class="ti-plus"></i></button>
+                            <button data-toggle="modal" data-target="#addConf" class="btn btn-sm btn-primary" title="Add New Configuration Value"><i class="ti-plus"></i></button>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-12 scrollbox-md" data-simplebar>
                                 <ul class="list-group list-group-flush">
-                                    {% for conf in config_values %}
+                                    {% for conf in confs %}
                                     <li class="list-group-item">
                                         <div class="d-flex align-items-baseline">
                                             <div class="pl-4">
                                                 <strong>{{ conf.key }}</strong>: {{ conf.value }}
                                             </div>
                                             <div class="ml-auto text-right">
-                                                <a href="{% url 'edit-conf' conf.id %}" class="btn btn-sm btn-warning mb-2"><i class="ti-pencil-alt"></i></a>
+                                                {% if conf.is_active %}
+                                                <a href="{% url 'disable-conf' conf.id %}" class="btn btn-sm btn-warning mb-2"><i class="ti-na"></i></a>
+                                                {% else %}
+                                                <a href="{% url 'enable-conf' conf.id %}" class="btn btn-sm btn-success mb-2"><i class="ti-check"></i></a>
                                                 <a href="{% url 'delete-conf' conf.id %}" class="btn btn-sm btn-danger mb-2"><i class="ti-trash"></i></a>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </li>

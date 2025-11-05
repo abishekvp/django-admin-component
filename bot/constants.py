@@ -1,10 +1,8 @@
-API_ID = 13576167
-API_HASH = '4a314acf8e800b44ece5c62cf733bee8'
-PHONE = '+97450096461'
+API_ID = 33555860
+API_HASH = '45991f9bc7481db72c1371a583a7e137'
+PHONE = '+919791105217'
 
-SOURCES = ['@tradewithAsif07', '@Ahamekhan7863', '@FxGold_Royal_99',
-           '@GoldSignalsfxtm1', '@PRIME_GOLD_SIGNAL', '@Meerbhai1953_2653',
-           '@GOLDVIPSIGNALS768', '@testing_source']
+SOURCES = ['@tradewithAsif07', '@Ahamekhan7863', '@FxGold_Royal_99', '@PRIME_GOLD_SIGNAL', '@pacssignals', '@GOLDVIPSIGNALS768', '@testing_source']
 
 DESTINATION = '@Fxaialgotraders'
 

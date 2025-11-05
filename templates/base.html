@@ -24,15 +24,98 @@
 <body class="theme-dark">
     {% block index %}
     {% endblock %}
+
+    <!-- Modals -->
+    <div class="modal fade" id="addSource" tabindex="-1" role="dialog" aria-labelledby="addSourceTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <form class="modal-content" method="post" action="{% url 'add-source' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSourceTitle">Add Source Group</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-carolina"><i class="ti-user text-light"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="source-title" placeholder="Source Title" autofocus>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-carolina"><i class="ti-user text-light"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="source-name" placeholder="Source username Ex: @group_name / @channel_name">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addConf" tabindex="-1" role="dialog" aria-labelledby="addConfTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <form class="modal-content" method="post" action="{% url 'add-conf' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addConfTitle">Add Configurations</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Configuration Key</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-carolina"><i class="ti-user text-light"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="conf-key" placeholder="Configuration Key" autofocus>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Configuration Value</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-carolina"><i class="ti-user text-light"></i></span>
+                            </div>
+                            <input type="text" class="form-control" name="conf-value" placeholder="Configuration Value">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- END Modals -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'assets/scripts/siqtheme.js' %}"></script>
     <script src="{% static 'assets/scripts/pages/dashboard.js' %}"></script>
-    <script src="{% static 'assets/scripts/pages/ch_apexcharts.js' %}"></script>
-    <script src="{% static 'assets/scripts/pages/cp_datetime.js' %}"></script>
-    <script src="{% static 'assets/scripts/pages/fm_ckeditor_balloon.js' %}"></script>
-    <script src="{% static 'assets/scripts/pages/fm_ckeditor_block.js' %}"></script>
-    <script src="{% static 'assets/scripts/pages/fm_ckeditor_classic.js' %}"></script>
-    <script src="{% static 'assets/scripts/pages/fm_ckeditor_document.js' %}"></script>
-    <script src="{% static 'assets/scripts/pages/fm_ckeditor_inline.js' %}"></script>
+    <!-- <script src="{% static 'assets/scripts/pages/ch_apexcharts.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/scripts/pages/cp_datetime.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/scripts/pages/fm_ckeditor_balloon.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/scripts/pages/fm_ckeditor_block.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/scripts/pages/fm_ckeditor_classic.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/scripts/pages/fm_ckeditor_document.js' %}"></script> -->
+    <!-- <script src="{% static 'assets/scripts/pages/fm_ckeditor_inline.js' %}"></script> -->
     <script src="{% static 'assets/scripts/pages/fm_control.js' %}"></script>
     <script src="{% static 'assets/scripts/pages/tb_datatables.js' %}"></script>
     <script src="{% static 'assets/scripts/pages/ui_cards.js' %}"></script>

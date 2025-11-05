@@ -3,44 +3,43 @@
 //     "positionClass": "toast-top-center"
 // }
 
-$("#restart-bot").click(function() {
-    alert("Restarting bot...");
+$('#restartBtn').on('click', restartBot);
+$('#stopBtn').on('click', stopBot);
+
+function restartBot(){
     $.ajax({
-        url: '/start-bot',
+        url: '/restart-bot',
         type: 'GET',
         success: function(response) {
-            alert("Bot restarted successfully!");
-            // toastr.success('Bot restarted successfully!');
+            if (response && response.message) {
+                if (response.status == 200) {
+                    toastr.success(response.message);
+                } else {
+                    toastr.info(response.message)
+                }
+            }
         },
         error: function(xhr, status, error) {
-            alert("Error restarting bot: " + error);
-            // toastr.error('Error restarting bot: ' + error);
+            toastr.warning('Error restarting bot: ' + error);
         }
     });
-});
+}
 
-function add_source_group() {
-    var group_username = prompt("Enter the group username (without @):");
-    var group_title = prompt("Enter the group title:");
-
-    if (group_username && group_title) {
-        $.ajax({
-            url: '/add-source-group',
-            type: 'POST',
-            data: {
-                'group_username': group_username,
-                'group_title': group_title,
-                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
-            },
-            success: function(response) {
-                alert("Source group added successfully!");
-                location.reload(); // Reload the page to show the new group
-            },
-            error: function(xhr, status, error) {
-                alert("Error adding source group: " + error);
+function stopBot(){
+    $.ajax({
+        url: '/stop-bot',
+        type: 'GET',
+        success: function(response) {
+            if (response && response.message) {
+                if (response.status == 200) {
+                    toastr.success(response.message);
+                } else {
+                    toastr.info(response.message)
+                }
             }
-        });
-    } else {
-        alert("Group username and title are required.");
-    }
+        },
+        error: function(xhr, status, error) {
+            toastr.warning('Error restarting bot: ' + error);
+        }
+    });
 }

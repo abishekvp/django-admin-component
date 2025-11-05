@@ -1,25 +1,54 @@
 from telethon import TelegramClient, events
+from telethon.errors import SessionPasswordNeededError
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
 import re, json, requests
-from app.models import GroupMessages, DeletedMessages, Updates
+from app.models import GroupMessages, DeletedMessages, Updates, Configuration, Source
 from app.constants import *
 from asgiref.sync import sync_to_async
 from app.log import log
 
-# ---------------- CONFIGURABLE PARAMETERS ---------------- #
-
-# DB_PATH = 'signals.db'
-LIVE_PRICE_THRESHOLD = 10
-DUPLICATE_TIMEFRAME_MINUTES = 60
-LIVE_PRICE_CHECK_INTERVAL = 30
-NEAR_HIT_THRESHOLD = 2
-AUTO_EXPORT_HOUR = 0
-AUTO_EXPORT_WINDOW_MINUTES = 2
-SUMMARY_LOOKBACK_HOURS = 24
-
-
 client = None
+
+@sync_to_async
+def get_sources():
+    return list(Source.objects.values_list('username', flat=True))
+
+@sync_to_async
+def get_conf(conf):
+    return Configuration.objects.filter(key=conf).get().value
+
+OTP_CODE = ""
+
+# async def ensure_client():
+#     global client
+#     if client is None:
+#         client = TelegramClient('signal_bot', API_ID, API_HASH)
+#         await client.connect()
+
+#         if not await client.is_user_authorized():
+#             log("Sending login code request...")
+#             await client.send_code_request(PHONE)
+
+#             # Here, you can fetch OTP from a secure server variable or input API
+#             if OTP_CODE:
+#                 code = OTP_CODE
+#             else:
+#                 # You can replace this with a DB lookup or API input
+#                 code = input("Enter the Telegram code sent to you: ")
+
+#             try:
+#                 await client.sign_in(PHONE, code)
+#             # except SessionPasswordNeededError:
+#             except Exception as e:
+#                 log(f"Exception on sign-in. Error: {str(e)}")
+#                 # This means two-step verification is enabled
+#                 # password = os.getenv("TELEGRAM_PASSWORD")
+#                 # await client.sign_in(password=password)
+#         else:
+#             print("Already authorized.")
+
+#     return client
 
 def ensure_client():
     log("Ensuring Telegram client...")
@@ -200,7 +229,8 @@ async def main():
         log("[BOT] New message received.")
         chat = await event.get_chat()
         username = chat.username or ""
-        if username.lower() not in [s.replace('@', '').lower() for s in SOURCES]:
+        sources = await get_sources()
+        if username.lower() not in [s.replace('@', '').lower() for s in sources]:
             return
 
         parsed = parse_signal(event.message.text)
@@ -210,11 +240,12 @@ async def main():
         live_price = get_live_gold_price()
         entry_low, entry_high = parsed["entry_range"]["low"], parsed["entry_range"]["high"]
 
-        if live_price is not None and not (entry_low - LIVE_PRICE_THRESHOLD <= live_price <= entry_high + LIVE_PRICE_THRESHOLD):
+        live_price_threshold = await get_conf('LIVE_PRICE_THRESHOLD')
+        if live_price is not None and not (entry_low - live_price_threshold <= live_price <= entry_high + live_price_threshold):
             await save_message(parsed, event, None, live_price, "skipped", "price out of range")  # ✅
             return
 
-        timeframe_ago = make_aware(datetime.utcnow() - timedelta(minutes=DUPLICATE_TIMEFRAME_MINUTES))
+        timeframe_ago = make_aware(datetime.utcnow() - timedelta(minutes=get_conf('DUPLICATE_TIMEFRAME_MINUTES')))
         recent_signals = await get_recent_signals(timeframe_ago)  # ✅
 
         duplicate_found = False
@@ -264,19 +295,26 @@ async def main():
         if not deleted_ids:
             return
 
-        messages = GroupMessages.objects.filter(message_id__in=deleted_ids, status='active')
+        # Run the Django ORM query in a thread-safe way
+        messages = await sync_to_async(list)(
+            GroupMessages.objects.filter(message_id__in=deleted_ids, status='active')
+        )
+
         for msg in messages:
             try:
                 log(f"[DELETE] Deleting forwarded message {msg.message_id} in destination.")
-                client.delete_messages(msg.group_id, msg.message_id)
+                await sync_to_async(client.delete_messages)(msg.group_id, msg.message_id)  # though Telethon can stay async, we await it
+
                 msg.status = 'deleted'
-                msg.save()
-                DeletedMessages.objects.create(
+                await sync_to_async(msg.save)()
+
+                await sync_to_async(DeletedMessages.objects.create)(
                     group_id=msg.group_id,
                     group_username=msg.group_username,
                     message_id=msg.message_id,
                     message=msg.message
                 )
+
                 log(f"[DELETED] Forwarded message {msg.message_id} removed, saved in DB")
             except Exception as e:
                 log(f"[DELETE ERROR] {e}")

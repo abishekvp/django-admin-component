@@ -5,14 +5,22 @@ urlpatterns = [
     path('', views.dashboard, name="index"),
     path('index', views.dashboard, name="index"),
     path('dashboard', views.dashboard, name="dashboard"),
+    path('restart-bot', views.restart_bot, name="restart-bot"),
     path('start-bot', views.start_bot, name="start-bot"),
     path('stop-bot', views.stop_bot, name="stop-bot"),
     path('logs', views.logs, name="logs"),
 
-    # Group Management
-    path('disable-group/<int:group_id>', views.disable_group, name="disable-group"),
-    path('enable-group/<int:group_id>', views.enable_group, name="enable-group"),
-    path('delete-group/<int:group_id>', views.delete_group, name="delete-group"),
+    # Source Management
+    path('add-source', views.add_source, name="add-source"),
+    path('disable-source/<int:source_id>', views.disable_source, name="disable-source"),
+    path('enable-source/<int:source_id>', views.enable_source, name="enable-source"),
+    path('delete-source/<int:source_id>', views.delete_source, name="delete-source"),
+
+    # Configuration Management
+    path('add-conf', views.add_conf, name="add-conf"),
+    path('disable-conf/<int:conf_id>', views.disable_conf, name="disable-conf"),
+    path('enable-conf/<int:conf_id>', views.enable_conf, name="enable-conf"),
+    path('delete-conf/<int:conf_id>', views.delete_conf, name="delete-conf"),
 
     # Components
     path('cp_datetime', views.cp_datetime, name="cp_datetime"),

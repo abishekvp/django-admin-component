@@ -1,8 +1,13 @@
 from django.db import models
 
-class Groups(models.Model):
-    group_username = models.CharField(max_length=255)
-    group_title = models.CharField(max_length=255)
+class Source(models.Model):
+    username = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+
+class Configuration(models.Model):
+    key = models.CharField(max_length=128)
+    value = models.CharField(max_length=128)
     is_active = models.BooleanField(default=True)
 
 class GroupMessages(models.Model):

@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from bot import bot_updated
 import asyncio
 import threading
-from app.models import Log
+from app.models import Log, Source, Configuration
 from app.constants import DEBUG, ERROR, INFO
 from app.log import log
 
@@ -73,6 +73,17 @@ def stop_bot_thread():
 
 
 # --- Django views ---
+def restart_bot(request):
+    message = ""
+    stop = start_bot_thread()
+    if not stop:
+        message += "Bot failed to stop. "
+    start = start_bot_thread()
+    return JsonResponse({
+        "message": message + "Bot started successfully" if start else "Bot already running",
+        "status": 200 if start else 409
+    })
+
 def start_bot(request):
     started = start_bot_thread()
     return JsonResponse({
@@ -88,10 +99,13 @@ def stop_bot(request):
         "status": 200 if stopped else 404
     })
 
-
 @login_required(login_url='signin')
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    data = {
+        'sources': Source.objects.all(),
+        'confs': Configuration.objects.all()
+    }
+    return render(request, 'dashboard.html', data)
 
 def logs(request):
     logs = Log.objects.all()
@@ -102,41 +116,93 @@ def logs(request):
         i -= 1
     return render(request, 'logs.html', {'logs': sorted_logs})
 
-# Group Management
+# Source Management
+
 @login_required(login_url='signin')
-def disable_group(request, group_id):
-    from app.models import Groups
+def add_source(request):
+    if request.method == "POST":
+        source_username = "@" + str(request.POST.get('source-name')).strip()
+        source_title = request.POST.get('source-title')
+        Source.objects.create(username=source_username, title=source_title, is_active=True)
+    return redirect('dashboard')
+
+
+@login_required(login_url='signin')
+def disable_source(request, source_id):
     try:
-        group = Groups.objects.get(id=group_id)
-        group.is_active = False
-        group.save()
-        log(f"[GROUP] Disabled group {group.group_username} (ID: {group_id})", INFO)
-    except Groups.DoesNotExist:
-        log(f"[GROUP ERROR] Group with ID {group_id} does not exist", ERROR)
+        source = Source.objects.get(id=source_id)
+        source.is_active = False
+        source.save()
+        log(f"[source] Disabled source {source.username} (ID: {source_id})", INFO)
+    except Source.DoesNotExist:
+        log(f"[source ERROR] source with ID {source_id} does not exist", ERROR)
     return redirect('dashboard')
 
 @login_required(login_url='signin')
-def enable_group(request, group_id):
-    from app.models import Groups
+def enable_source(request, source_id):
     try:
-        group = Groups.objects.get(id=group_id)
-        group.is_active = True
-        group.save()
-        log(f"[GROUP] Enabled group {group.group_username} (ID: {group_id})", INFO)
-    except Groups.DoesNotExist:
-        log(f"[GROUP ERROR] Group with ID {group_id} does not exist", ERROR)
+        source = Source.objects.get(id=source_id)
+        source.is_active = True
+        source.save()
+        log(f"[source] Enabled source {source.username} (ID: {source_id})", INFO)
+    except Source.DoesNotExist:
+        log(f"[source ERROR] source with ID {source_id} does not exist", ERROR)
     return redirect('dashboard')
 
 @login_required(login_url='signin')
-def delete_group(request, group_id):
-    from app.models import Groups
+def delete_source(request, source_id):
     try:
-        group = Groups.objects.get(id=group_id)
-        group_username = group.group_username
-        group.delete()
-        log(f"[GROUP] Deleted group {group_username} (ID: {group_id})", INFO)
-    except Groups.DoesNotExist:
-        log(f"[GROUP ERROR] Group with ID {group_id} does not exist", ERROR)
+        source = Source.objects.get(id=source_id)
+        source_username = source.username
+        source.delete()
+        log(f"[source] Deleted source {source_username} (ID: {source_id})", INFO)
+    except Source.DoesNotExist:
+        log(f"[source ERROR] source with ID {source_id} does not exist", ERROR)
+    return redirect('dashboard')
+
+
+# Configuration Management
+
+@login_required(login_url='signin')
+def add_conf(request):
+    if request.method == "POST":
+        conf_key = request.POST.get('conf-key')
+        conf_value = request.POST.get('conf-value')
+        Configuration.objects.create(key=conf_key, value=conf_value, is_active=True)
+    return redirect('dashboard')
+
+
+@login_required(login_url='signin')
+def disable_conf(request, conf_id):
+    try:
+        conf = Configuration.objects.get(id=conf_id)
+        conf.is_active = False
+        conf.save()
+        log(f"[conf] Disabled conf {conf.key} (ID: {conf_id})", INFO)
+    except Configuration.DoesNotExist:
+        log(f"[conf ERROR] conf with ID {conf_id} does not exist", ERROR)
+    return redirect('dashboard')
+
+@login_required(login_url='signin')
+def enable_conf(request, conf_id):
+    try:
+        conf = Configuration.objects.get(id=conf_id)
+        conf.is_active = True
+        conf.save()
+        log(f"[conf] Enabled conf {conf.key} (ID: {conf_id})", INFO)
+    except Configuration.DoesNotExist:
+        log(f"[conf ERROR] conf with ID {conf_id} does not exist", ERROR)
+    return redirect('dashboard')
+
+@login_required(login_url='signin')
+def delete_conf(request, conf_id):
+    try:
+        conf = Configuration.objects.get(id=conf_id)
+        conf_key = conf.key
+        conf.delete()
+        log(f"[conf] Deleted conf {conf_key} (ID: {conf_id})", INFO)
+    except Configuration.DoesNotExist:
+        log(f"[conf ERROR] conf with ID {conf_id} does not exist", ERROR)
     return redirect('dashboard')
 
 # Components
